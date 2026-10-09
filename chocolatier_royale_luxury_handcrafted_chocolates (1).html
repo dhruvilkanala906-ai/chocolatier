@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chocolatier Royale | Artisanal Handcrafted Chocolates</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        choco: {
+                            900: '#1a0c06',
+                            800: '#2c1810',
+                            700: '#3d2314',
+                            600: '#5c3821',
+                            500: '#795548',
+                            400: '#9a7362',
+                            300: '#c2a698',
+                            200: '#e3d5ca',
+                            100: '#f5ebe0',
+                            50: '#fdfaf6',
+                        },
+                        gold: {
+                            DEFAULT: '#d4af37',
+                            light: '#f3e5ab',
+                            dark: '#aa820a',
+                            glow: '#ffd700'
+                        },
+                        ruby: '#a11f3c'
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Canvas & Utility Styles -->
+    <style>
+        #falling-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF0B3 0%, #D4AF37 50%, #997A15 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-border-glow {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+        }
+
+        .gold-border-glow:hover {
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.45);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a0c06;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5c3821;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(44, 24, 16, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .glass-card {
+            background: rgba(61, 35, 20, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-choco-900 text-choco-100 font-sans antialiased selection:bg-gold selection:text-choco-900 min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <canvas id="falling-canvas"></canvas>
+
+    <!-- Top Discount Ticker -->
+    <div class="bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 text-xs sm:text-sm font-semibold py-2 px-4 text-center tracking-wide flex justify-between items-center relative z-50 shadow-md">
+        <div class="hidden md:flex items-center space-x-2">
+            <i class="fa-solid fa-gift"></i>
+            <span>Complimentary Luxury Gift Box on orders over $75!</span>
+        </div>
+        <div class="mx-auto md:mx-0 flex items-center space-x-3">
+            <span>✨ Flash Sale: Use code <span class="bg-choco-900 text-gold px-2 py-0.5 rounded font-mono font-bold uppercase cursor-pointer hover:underline" onclick="copyPromo('CHOCO20')">CHOCO20</span> for 20% OFF</span>
+        </div>
+        <div class="hidden sm:flex items-center space-x-4">
+            <button id="toggle-falling-btn" onclick="toggleFallingChocolates()" class="text-xs bg-choco-900/80 hover:bg-choco-900 text-gold px-2.5 py-1 rounded-full transition flex items-center gap-1.5 border border-gold/30">
+                <i class="fa-solid fa-snowflake text-gold"></i>
+                <span id="falling-toggle-text">Falling Effect: ON</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-gold/20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-dark to-gold flex items-center justify-center shadow-lg group-hover:scale-105 transition transform">
+                        <i class="fa-solid fa-crown text-choco-900 text-xl"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-serif text-2xl font-bold tracking-wider gold-gradient-text uppercase">Chocolatier</span>
+                        <span class="text-[10px] tracking-[0.3em] text-gold-light/70 uppercase font-medium">Royale Artisan</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <nav class="hidden lg:flex items-center space-x-8 text-sm font-medium">
+                    <a href="#hero" class="hover:text-gold transition text-gold font-semibold">Home</a>
+                    <a href="#categories" class="hover:text-gold transition text-choco-200">Categories</a>
+                    <a href="#products" class="hover:text-gold transition text-choco-200">All Chocolates</a>
+                    <a href="#builder" class="hover:text-gold transition text-choco-200 flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles text-gold text-xs"></i>
+                        <span>Custom Box</span>
+                    </a>
+                    <a href="#discounts" class="hover:text-gold transition text-choco-200">Deals</a>
+                    <a href="#reviews" class="hover:text-gold transition text-choco-200">Reviews</a>
+                </nav>
+
+                <!-- Header Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Search Input -->
+                    <div class="relative hidden sm:block">
+                        <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="Search chocolates..." 
+                            class="bg-choco-800/80 border border-gold/30 rounded-full py-1.5 pl-9 pr-4 text-xs text-choco-100 placeholder-choco-400 focus:outline-none focus:border-gold w-36 md:w-48 transition-all">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-choco-400 text-xs"></i>
+                    </div>
+
+                    <!-- Cart Toggle Button -->
+                    <button onclick="toggleCartDrawer()" class="relative p-2.5 rounded-full bg-choco-800 hover:bg-choco-700 border border-gold/30 text-gold transition group">
+                        <i class="fa-solid fa-bag-shopping text-lg group-hover:scale-110 transition"></i>
+                        <span id="cart-badge" class="absolute -top-1 -right-1 bg-ruby text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-choco-900 shadow">0</span>
+                    </button>
+
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-lg text-choco-200 hover:text-gold hover:bg-choco-800">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-choco-900/95 border-b border-gold/20 px-4 pt-2 pb-6 space-y-3">
+            <input type="text" id="search-input-mobile" onkeyup="filterProductsMobile()" placeholder="Search chocolates..." 
+                class="w-full bg-choco-800 border border-gold/30 rounded-lg py-2 px-4 text-sm text-choco-100 mb-2">
+            <a href="#hero" onclick="toggleMobileMenu()" class="block py-2 text-gold font-medium">Home</a>
+            <a href="#categories" onclick="toggleMobileMenu()" class="block py-2 text-choco-200 hover:text-gold">Categories</a>
+            <a href="#products" onclick="toggleMobileMenu()" class="block py-2 text-choco-200 hover:text-gold">All Chocolates</a>
+            <a href="#builder" onclick="toggleMobileMenu()" class="block py-2 text-choco-200 hover:text-gold">Custom Truffle Box</a>
+            <a href="#discounts" onclick="toggleMobileMenu()" class="block py-2 text-choco-200 hover:text-gold">Special Discounts</a>
+            <a href="#reviews" onclick="toggleMobileMenu()" class="block py-2 text-choco-200 hover:text-gold">Reviews</a>
+            <div class="pt-2 border-t border-choco-800 flex justify-between items-center text-xs">
+                <span>Falling Effect:</span>
+                <button onclick="toggleFallingChocolates()" class="bg-gold/20 text-gold px-3 py-1 rounded-full border border-gold/30">Toggle Effect</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Slider Section -->
+    <section id="hero" class="relative overflow-hidden py-12 lg:py-20 bg-gradient-to-b from-choco-900 via-choco-800 to-choco-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- Carousel Container -->
+            <div id="hero-carousel" class="relative rounded-3xl overflow-hidden glass-card shadow-2xl border border-gold/30">
+                <!-- Slides Wrappers -->
+                <div id="carousel-slides" class="flex transition-transform duration-700 ease-in-out">
+                    
+                    <!-- Slide 1 -->
+                    <div class="min-w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-8 lg:p-14 bg-gradient-to-r from-choco-900/90 to-choco-800/80">
+                        <div class="space-y-6">
+                            <span class="inline-block px-3 py-1 rounded-full bg-gold/10 text-gold border border-gold/30 text-xs font-semibold tracking-wider uppercase">
+                                Grand Master Collection 2026
+                            </span>
+                            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight">
+                                Pure Indulgence in Every <span class="gold-gradient-text">Single Bite</span>
+                            </h1>
+                            <p class="text-choco-200 text-sm sm:text-base leading-relaxed max-w-xl">
+                                Hand-crafted by Belgian master chocolatiers using 100% sustainably sourced single-origin cocoa beans. Experience truffle perfection today.
+                            </p>
+                            <div class="flex flex-wrap gap-4 pt-2">
+                                <a href="#products" class="bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold px-7 py-3.5 rounded-full shadow-lg hover:shadow-gold/20 hover:scale-105 transition transform flex items-center gap-2">
+                                    <span>Explore Collection</span>
+                                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                                </a>
+                                <a href="#builder" class="bg-choco-800 hover:bg-choco-700 text-gold font-semibold px-6 py-3.5 rounded-full border border-gold/40 transition flex items-center gap-2">
+                                    <i class="fa-solid fa-box-open"></i>
+                                    <span>Build Custom Box</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="relative flex justify-center items-center">
+                            <div class="absolute w-72 h-72 rounded-full bg-gold/10 blur-3xl -z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=700&auto=format&fit=crop" alt="Dark Chocolate Truffles" class="rounded-2xl shadow-2xl object-cover max-h-[380px] w-full border border-gold/20 transform hover:scale-102 transition duration-500">
+                        </div>
+                    </div>
+
+                    <!-- Slide 2 -->
+                    <div class="min-w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-8 lg:p-14 bg-gradient-to-r from-choco-900/90 via-ruby/20 to-choco-800/80">
+                        <div class="space-y-6">
+                            <span class="inline-block px-3 py-1 rounded-full bg-ruby/20 text-pink-300 border border-ruby/40 text-xs font-semibold tracking-wider uppercase">
+                                Exclusive Discovery
+                            </span>
+                            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight">
+                                Rare <span class="text-pink-400">Ruby Cocoa</span> Berry Symphony
+                            </h1>
+                            <p class="text-choco-200 text-sm sm:text-base leading-relaxed max-w-xl">
+                                Naturally pink, intense berry freshness with delicate cocoa undertones. No added colorings or fruit flavorings.
+                            </p>
+                            <div class="flex flex-wrap gap-4 pt-2">
+                                <button onclick="quickAddToCart(3)" class="bg-gradient-to-r from-pink-500 to-ruby text-white font-bold px-7 py-3.5 rounded-full shadow-lg hover:scale-105 transition transform flex items-center gap-2">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                    <span>Order Ruby Delights ($24.99)</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative flex justify-center items-center">
+                            <div class="absolute w-72 h-72 rounded-full bg-pink-500/10 blur-3xl -z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1575224300306-1b8da36134ec?w=700&auto=format&fit=crop" alt="Ruby Chocolates" class="rounded-2xl shadow-2xl object-cover max-h-[380px] w-full border border-pink-500/30 transform hover:scale-102 transition duration-500">
+                        </div>
+                    </div>
+
+                    <!-- Slide 3 -->
+                    <div class="min-w-full flex-shrink-0 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-8 lg:p-14 bg-gradient-to-r from-choco-900/90 to-amber-950/80">
+                        <div class="space-y-6">
+                            <span class="inline-block px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold tracking-wider uppercase">
+                                Artisanal Gift Sets
+                            </span>
+                            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight">
+                                The Ultimate <span class="gold-gradient-text">Royal Gift Box</span>
+                            </h1>
+                            <p class="text-choco-200 text-sm sm:text-base leading-relaxed max-w-xl">
+                                24 individually handcrafted chocolates wrapped in gold foil and packed in our velvet signature gift box.
+                            </p>
+                            <div class="flex flex-wrap gap-4 pt-2">
+                                <a href="#discounts" class="bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold px-7 py-3.5 rounded-full shadow-lg hover:scale-105 transition transform">
+                                    Claim 30% Gift Coupon
+                                </a>
+                            </div>
+                        </div>
+                        <div class="relative flex justify-center items-center">
+                            <div class="absolute w-72 h-72 rounded-full bg-gold/10 blur-3xl -z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1526081347589-7fa3cb41b4b2?w=700&auto=format&fit=crop" alt="Chocolate Gift Box" class="rounded-2xl shadow-2xl object-cover max-h-[380px] w-full border border-gold/30">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Carousel Controls -->
+                <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-choco-900/80 hover:bg-gold text-gold hover:text-choco-900 border border-gold/30 flex items-center justify-center transition shadow-lg">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-choco-900/80 hover:bg-gold text-gold hover:text-choco-900 border border-gold/30 flex items-center justify-center transition shadow-lg">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+
+                <!-- Carousel Indicators -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    <button onclick="goToSlide(0)" class="slide-dot w-8 h-2 rounded-full bg-gold transition-all duration-300"></button>
+                    <button onclick="goToSlide(1)" class="slide-dot w-2 h-2 rounded-full bg-choco-500/60 transition-all duration-300"></button>
+                    <button onclick="goToSlide(2)" class="slide-dot w-2 h-2 rounded-full bg-choco-500/60 transition-all duration-300"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Coupon & Offers Section -->
+    <section id="discounts" class="py-10 bg-choco-950 border-y border-gold/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <span class="text-gold text-xs font-bold tracking-widest uppercase">Special Promotions</span>
+                <h2 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">Active Discount Coupons</h2>
+                <p class="text-choco-300 text-xs sm:text-sm mt-1">Click any code to automatically copy and use during checkout.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Coupon 1 -->
+                <div class="glass-card rounded-2xl p-6 border border-gold/30 relative overflow-hidden group hover:border-gold transition">
+                    <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-gold/5 rounded-full blur-xl"></div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-xs text-gold-light font-medium uppercase tracking-wider">Welcome Offer</span>
+                            <h3 class="text-2xl font-bold text-white font-serif">20% OFF</h3>
+                        </div>
+                        <span class="bg-gold/20 text-gold text-[10px] font-bold px-2.5 py-1 rounded-full border border-gold/30">ALL ORDERS</span>
+                    </div>
+                    <p class="text-choco-300 text-xs mb-4">Valid on any handcrafted chocolate items or custom boxes.</p>
+                    <div class="flex items-center justify-between bg-choco-900/90 p-2.5 rounded-xl border border-dashed border-gold/40">
+                        <span class="font-mono text-gold font-bold text-sm tracking-widest">CHOCO20</span>
+                        <button onclick="copyPromo('CHOCO20')" class="text-xs bg-gold hover:bg-gold-light text-choco-900 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Coupon 2 -->
+                <div class="glass-card rounded-2xl p-6 border border-gold/30 relative overflow-hidden group hover:border-gold transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-xs text-gold-light font-medium uppercase tracking-wider">Sweet Savings</span>
+                            <h3 class="text-2xl font-bold text-white font-serif">$10 OFF</h3>
+                        </div>
+                        <span class="bg-gold/20 text-gold text-[10px] font-bold px-2.5 py-1 rounded-full border border-gold/30">MIN $50</span>
+                    </div>
+                    <p class="text-choco-300 text-xs mb-4">Instant flat $10 discount when spending $50 or more.</p>
+                    <div class="flex items-center justify-between bg-choco-900/90 p-2.5 rounded-xl border border-dashed border-gold/40">
+                        <span class="font-mono text-gold font-bold text-sm tracking-widest">SWEET10</span>
+                        <button onclick="copyPromo('SWEET10')" class="text-xs bg-gold hover:bg-gold-light text-choco-900 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Coupon 3 -->
+                <div class="glass-card rounded-2xl p-6 border border-gold/30 relative overflow-hidden group hover:border-gold transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-xs text-gold-light font-medium uppercase tracking-wider">Royal Deluxe</span>
+                            <h3 class="text-2xl font-bold text-white font-serif">30% OFF</h3>
+                        </div>
+                        <span class="bg-gold/20 text-gold text-[10px] font-bold px-2.5 py-1 rounded-full border border-gold/30">MIN $100</span>
+                    </div>
+                    <p class="text-choco-300 text-xs mb-4">Huge savings for party orders and high-end gift sets.</p>
+                    <div class="flex items-center justify-between bg-choco-900/90 p-2.5 rounded-xl border border-dashed border-gold/40">
+                        <span class="font-mono text-gold font-bold text-sm tracking-widest">ROYAL30</span>
+                        <button onclick="copyPromo('ROYAL30')" class="text-xs bg-gold hover:bg-gold-light text-choco-900 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Navigation -->
+    <section id="categories" class="pt-12 pb-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+                <span class="text-gold text-xs font-bold tracking-widest uppercase">The Confectionery</span>
+                <h2 class="text-3xl font-serif font-bold text-white mt-1">Explore Chocolate Types</h2>
+            </div>
+            <p class="text-choco-300 text-sm max-w-md">Filter through our wide selection of dark, milk, white, ruby, vegan, and handcrafted truffle chocolates.</p>
+        </div>
+
+        <!-- Filter Buttons horizontal scrollable container -->
+        <div class="flex items-center space-x-2 sm:space-x-3 overflow-x-auto pb-4 scrollbar-none">
+            <button onclick="filterCategory('all')" class="cat-btn active border border-gold bg-gold text-choco-900 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                All Varieties (<span id="count-all">12</span>)
+            </button>
+            <button onclick="filterCategory('dark')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                🍫 Dark Chocolate
+            </button>
+            <button onclick="filterCategory('milk')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                🥛 Milk Chocolate
+            </button>
+            <button onclick="filterCategory('white')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                🤍 White Chocolate
+            </button>
+            <button onclick="filterCategory('ruby')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                💖 Ruby Chocolate
+            </button>
+            <button onclick="filterCategory('truffles')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                🍬 Truffles & Pralines
+            </button>
+            <button onclick="filterCategory('vegan')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                🌱 Vegan & Sugar-Free
+            </button>
+            <button onclick="filterCategory('gifts')" class="cat-btn border border-gold/30 bg-choco-800/80 hover:border-gold text-choco-200 px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition">
+                🎁 Luxury Gift Sets
+            </button>
+        </div>
+    </section>
+
+    <!-- Products Catalog Grid -->
+    <section id="products" class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[500px]">
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Dynamic Injection by JS -->
+        </div>
+
+        <div id="no-products-msg" class="hidden text-center py-16 space-y-3">
+            <i class="fa-solid fa-cookie-bite text-4xl text-choco-500"></i>
+            <h3 class="text-xl font-bold text-white">No Chocolates Found</h3>
+            <p class="text-choco-300 text-sm">Try searching for another keyword or clearing your search filter.</p>
+            <button onclick="filterCategory('all')" class="bg-gold text-choco-900 font-bold px-4 py-2 rounded-full text-xs mt-2">Reset Filters</button>
+        </div>
+    </section>
+
+    <!-- Custom Truffle Box Builder -->
+    <section id="builder" class="py-16 bg-gradient-to-b from-choco-900 via-choco-950 to-choco-900 border-t border-gold/15">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <div class="lg:col-span-5 space-y-5">
+                    <span class="bg-gold/20 text-gold text-xs font-bold px-3 py-1 rounded-full border border-gold/30 uppercase tracking-widest">
+                        Interactive Chocolatier Studio
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-serif font-bold text-white">
+                        Build Your Own <span class="gold-gradient-text">6-Piece Truffle Box</span>
+                    </h2>
+                    <p class="text-choco-200 text-sm leading-relaxed">
+                        Select 6 of your favorite handcrafted truffles below to create a personalized custom gift box for yourself or someone special.
+                    </p>
+                    
+                    <!-- Progress / Slot Display -->
+                    <div class="glass-card p-5 rounded-2xl border border-gold/30">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold uppercase text-gold">Box Slots Filled:</span>
+                            <span id="box-count-display" class="text-sm font-bold text-white font-mono">0 / 6</span>
+                        </div>
+                        
+                        <!-- 6 Slots preview -->
+                        <div class="grid grid-cols-6 gap-2 mb-4" id="box-slots-container">
+                            <div class="slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50">1</div>
+                            <div class="slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50">2</div>
+                            <div class="slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50">3</div>
+                            <div class="slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50">4</div>
+                            <div class="slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50">5</div>
+                            <div class="slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50">6</div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-choco-800">
+                            <div>
+                                <span class="text-xs text-choco-300 block">Custom Box Price:</span>
+                                <span class="text-xl font-bold text-gold font-serif">$29.99</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="clearCustomBox()" class="px-3 py-2 text-xs text-choco-300 hover:text-white transition">Clear All</button>
+                                <button id="add-custom-box-btn" onclick="addCustomBoxToCart()" disabled class="bg-gold opacity-50 cursor-not-allowed text-choco-900 font-bold px-5 py-2 rounded-xl text-xs transition shadow">
+                                    Add Box to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Truffle Selection Options -->
+                <div class="lg:col-span-7">
+                    <h3 class="text-sm font-bold text-gold uppercase tracking-wider mb-4">Click to add truffles into your box:</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="truffle-selection-grid">
+                        <!-- Javascript will populate interactive truffle items -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews / Testimonials -->
+    <section id="reviews" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-gold text-xs font-bold tracking-widest uppercase">Loved by Connoisseurs</span>
+            <h2 class="text-3xl font-serif font-bold text-white mt-1">What Chocolate Lovers Say</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-card p-6 rounded-2xl border border-gold/20 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="flex text-gold text-xs gap-1">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-choco-200 text-xs sm:text-sm italic leading-relaxed">
+                        " absolute perfection! The 85% Dark Sea Salt Ganache melts so smoothly. The falling chocolate design on the site made ordering super fun too!"
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 mt-6 pt-4 border-t border-choco-800">
+                    <div class="w-9 h-9 rounded-full bg-gold/20 text-gold font-bold flex items-center justify-center text-xs">SL</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Sophia Laurent</h4>
+                        <span class="text-[10px] text-choco-400">Verified Chocolate Collector</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl border border-gold/20 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="flex text-gold text-xs gap-1">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-choco-200 text-xs sm:text-sm italic leading-relaxed">
+                        "Ordered the Royal Velvet Gift Set for an anniversary. The promo code CHOCO20 worked instantly and saved me 20%. Packaging is regal."
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 mt-6 pt-4 border-t border-choco-800">
+                    <div class="w-9 h-9 rounded-full bg-gold/20 text-gold font-bold flex items-center justify-center text-xs">MC</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Marcus Chen</h4>
+                        <span class="text-[10px] text-choco-400">Pastry Chef & Foodie</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl border border-gold/20 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <div class="flex text-gold text-xs gap-1">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-choco-200 text-xs sm:text-sm italic leading-relaxed">
+                        "The Ruby Raspberry truffles are out of this world! Loved creating my own custom 6-pack box. Will definitely be a repeat buyer."
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 mt-6 pt-4 border-t border-choco-800">
+                    <div class="w-9 h-9 rounded-full bg-gold/20 text-gold font-bold flex items-center justify-center text-xs">EB</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Elena Rostova</h4>
+                        <span class="text-[10px] text-choco-400">Verified Gourmet Customer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto bg-choco-950 border-t border-gold/20 pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-gold flex items-center justify-center text-choco-900 font-bold">
+                            <i class="fa-solid fa-crown text-sm"></i>
+                        </div>
+                        <span class="font-serif text-xl font-bold gold-gradient-text uppercase">Chocolatier</span>
+                    </div>
+                    <p class="text-choco-300 text-xs leading-relaxed">
+                        Handcrafting luxury Belgian and Swiss artisan chocolates using non-GMO ingredients and single-origin cocoa.
+                    </p>
+                    <div class="flex space-x-3 text-gold">
+                        <a href="#" class="w-8 h-8 rounded-full bg-choco-900 border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-choco-900 transition"><i class="fa-brands fa-instagram text-xs"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-choco-900 border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-choco-900 transition"><i class="fa-brands fa-facebook-f text-xs"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-choco-900 border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-choco-900 transition"><i class="fa-brands fa-pinterest text-xs"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-white font-serif uppercase tracking-wider mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-xs text-choco-300">
+                        <li><a href="#products" class="hover:text-gold transition">Dark Chocolate Bars</a></li>
+                        <li><a href="#products" class="hover:text-gold transition">Milk Chocolate Truffles</a></li>
+                        <li><a href="#products" class="hover:text-gold transition">Ruby Cocoa Delights</a></li>
+                        <li><a href="#products" class="hover:text-gold transition">Sugar-Free Options</a></li>
+                        <li><a href="#builder" class="hover:text-gold transition">Custom Box Studio</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-white font-serif uppercase tracking-wider mb-4">Customer Care</h4>
+                    <ul class="space-y-2 text-xs text-choco-300">
+                        <li><a href="#" class="hover:text-gold transition">Temperature-Controlled Shipping</a></li>
+                        <li><a href="#" class="hover:text-gold transition">Gift Card Redemption</a></li>
+                        <li><a href="#" class="hover:text-gold transition">Allergen & Nutritional Info</a></li>
+                        <li><a href="#" class="hover:text-gold transition">Track Your Order</a></li>
+                        <li><a href="#" class="hover:text-gold transition">Returns & Guarantee</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-white font-serif uppercase tracking-wider mb-4">Subscribe for 10% Off</h4>
+                    <p class="text-choco-300 text-xs mb-3">Join the Royale Club for exclusive tasting invitations & discounts.</p>
+                    <form onsubmit="handleNewsletter(event)" class="space-y-2">
+                        <input type="email" placeholder="Enter your email" required class="w-full bg-choco-900 border border-gold/30 rounded-lg py-2 px-3 text-xs text-choco-100 placeholder-choco-500 focus:outline-none focus:border-gold">
+                        <button type="submit" class="w-full bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold py-2 rounded-lg text-xs hover:brightness-110 transition">
+                            Subscribe Now
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <div class="border-t border-choco-900 pt-6 flex flex-col sm:flex-row justify-between items-center text-[11px] text-choco-400 gap-4">
+                <p>&copy; 2026 Chocolatier Royale Inc. All rights reserved. Handcrafted with passion.</p>
+                <div class="flex items-center space-x-4">
+                    <span><i class="fa-brands fa-cc-visa text-base"></i></span>
+                    <span><i class="fa-brands fa-cc-mastercard text-base"></i></span>
+                    <span><i class="fa-brands fa-cc-apple-pay text-base"></i></span>
+                    <span><i class="fa-brands fa-cc-paypal text-base"></i></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Sliding Cart Drawer Panel Overlay -->
+    <div id="cart-drawer-backdrop" onclick="toggleCartDrawer()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-choco-950 border-l border-gold/30 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+        <!-- Cart Header -->
+        <div class="p-5 border-b border-gold/20 flex items-center justify-between bg-choco-900">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-bag-shopping text-gold text-lg"></i>
+                <h3 class="font-serif font-bold text-lg text-white">Your Chocolate Bag</h3>
+            </div>
+            <button onclick="toggleCartDrawer()" class="text-choco-400 hover:text-white p-2 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Free Shipping Progress Bar -->
+        <div class="bg-choco-900/90 px-5 py-3 border-b border-choco-800 text-xs">
+            <div class="flex justify-between font-medium mb-1.5" id="free-shipping-text">
+                <span>Free Insulated Shipping Progress:</span>
+                <span class="text-gold font-bold">$75.00 needed</span>
+            </div>
+            <div class="w-full bg-choco-800 rounded-full h-2 overflow-hidden">
+                <div id="shipping-progress-bar" class="bg-gradient-to-r from-gold-dark to-gold h-full w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+
+        <!-- Cart Items List -->
+        <div id="cart-items-container" class="flex-1 overflow-y-auto p-5 space-y-4">
+            <!-- Dynamic Injection -->
+        </div>
+
+        <!-- Cart Footer / Discount & Totals -->
+        <div class="p-5 border-t border-gold/20 bg-choco-900/90 space-y-4">
+            <!-- Promo Code Input -->
+            <div class="space-y-1">
+                <label class="text-[11px] font-bold text-gold uppercase tracking-wider block">Have a Coupon Code?</label>
+                <div class="flex gap-2">
+                    <input type="text" id="cart-promo-input" placeholder="e.g. CHOCO20" class="flex-1 bg-choco-950 border border-gold/30 rounded-lg px-3 py-1.5 text-xs text-white uppercase placeholder-choco-600 focus:outline-none focus:border-gold">
+                    <button onclick="applyPromoCode()" class="bg-gold hover:bg-gold-light text-choco-900 px-4 py-1.5 rounded-lg text-xs font-bold transition">
+                        Apply
+                    </button>
+                </div>
+                <div id="promo-message" class="text-[11px] hidden"></div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="space-y-1.5 text-xs text-choco-200 border-t border-choco-800 pt-3">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal" class="font-bold text-white">$0.00</span>
+                </div>
+                <div id="discount-row" class="flex justify-between text-emerald-400 hidden">
+                    <span>Discount (<span id="discount-name"></span>)</span>
+                    <span id="cart-discount" class="font-bold">-$0.00</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Insulated Shipping</span>
+                    <span id="cart-shipping" class="font-bold text-white">$5.99</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold text-white pt-2 border-t border-choco-800">
+                    <span class="gold-gradient-text">Total</span>
+                    <span id="cart-total" class="gold-gradient-text text-lg">$0.00</span>
+                </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <button onclick="openCheckoutModal()" class="w-full bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold py-3.5 rounded-xl shadow-lg hover:brightness-110 transition flex items-center justify-center space-x-2 text-sm">
+                <span>Proceed to Checkout</span>
+                <i class="fa-solid fa-lock text-xs"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Quick View Product Modal -->
+    <div id="quickview-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel border border-gold/40 rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative overflow-hidden text-white shadow-2xl">
+            <button onclick="closeQuickView()" class="absolute top-4 right-4 text-choco-300 hover:text-white text-xl p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="quickview-content" class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                <!-- JS Inject -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel border border-gold/40 rounded-3xl max-w-lg w-full p-6 sm:p-8 relative text-white shadow-2xl">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-choco-300 hover:text-white text-xl p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div id="checkout-form-container">
+                <div class="text-center mb-6">
+                    <i class="fa-solid fa-crown text-gold text-3xl mb-2"></i>
+                    <h3 class="text-2xl font-serif font-bold text-white">Complete Your Order</h3>
+                    <p class="text-xs text-choco-300">Fast insulated delivery guaranteed not to melt.</p>
+                </div>
+
+                <form onsubmit="processCheckout(event)" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block text-choco-300 mb-1">Full Name</label>
+                        <input type="text" required placeholder="Lord/Lady Chocolate Lover" class="w-full bg-choco-900 border border-gold/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-choco-300 mb-1">Email Address</label>
+                            <input type="email" required placeholder="you@domain.com" class="w-full bg-choco-900 border border-gold/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-gold">
+                        </div>
+                        <div>
+                            <label class="block text-choco-300 mb-1">Phone Number</label>
+                            <input type="tel" required placeholder="+1 (555) 000-0000" class="w-full bg-choco-900 border border-gold/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-gold">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-choco-300 mb-1">Shipping Address</label>
+                        <input type="text" required placeholder="123 Luxury Avenue, Suite 4" class="w-full bg-choco-900 border border-gold/30 rounded-lg p-2.5 text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div class="bg-choco-900 p-3 rounded-lg border border-gold/20 flex justify-between items-center">
+                        <span class="text-choco-300">Total Payable:</span>
+                        <span id="checkout-final-amount" class="text-base font-bold text-gold font-serif">$0.00</span>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold py-3 rounded-xl text-sm hover:brightness-110 transition shadow-lg">
+                        Place Order Now
+                    </button>
+                </form>
+            </div>
+
+            <div id="checkout-success-msg" class="hidden text-center py-8 space-y-4">
+                <div class="w-16 h-16 bg-gold/20 rounded-full border-2 border-gold flex items-center justify-center mx-auto text-gold text-2xl animate-bounce">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h3 class="text-2xl font-serif font-bold text-white">Order Confirmed!</h3>
+                <p class="text-choco-200 text-xs leading-relaxed">
+                    Thank you for indulging with Chocolatier Royale. Your order is being freshly handcrafted and packed in temperature-controlled boxes.
+                </p>
+                <div class="p-3 bg-choco-900/80 rounded-xl border border-gold/30 text-xs font-mono text-gold">
+                    Order ID: #ROYAL-<span id="order-id-num">89421</span>
+                </div>
+                <button onclick="closeCheckoutModal()" class="bg-gold text-choco-900 font-bold px-6 py-2.5 rounded-xl text-xs">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-choco-800 border border-gold/50 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <i class="fa-solid fa-circle-check text-gold text-lg"></i>
+        <span id="toast-message" class="text-xs font-medium">Item added to cart!</span>
+    </div>
+
+    <script>
+        const PRODUCTS = [
+            {
+                id: 1,
+                name: "85% Dark Single-Origin Cocoa Bar",
+                category: "dark",
+                price: 12.99,
+                originalPrice: 15.99,
+                rating: 4.9,
+                reviews: 128,
+                image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=600&auto=format&fit=crop",
+                tag: "Bestseller",
+                description: "Deep, intense organic dark chocolate with subtle notes of roasted espresso and blackberry."
+            },
+            {
+                id: 2,
+                name: "Belgian Milk Chocolate Hazelnut Slab",
+                category: "milk",
+                price: 14.50,
+                originalPrice: 17.00,
+                rating: 4.8,
+                reviews: 94,
+                image: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=600&auto=format&fit=crop",
+                tag: "Chef Special",
+                description: "Creamy Swiss milk chocolate loaded with whole caramelized Piedmont hazelnuts."
+            },
+            {
+                id: 3,
+                name: "Ruby Raspberry Artisan Gems",
+                category: "ruby",
+                price: 24.99,
+                originalPrice: 29.99,
+                rating: 5.0,
+                reviews: 210,
+                image: "https://images.unsplash.com/photo-1575224300306-1b8da36134ec?w=600&auto=format&fit=crop",
+                tag: "New Release",
+                description: "Naturally pink ruby chocolate truffles filled with fresh raspberry reduction."
+            },
+            {
+                id: 4,
+                name: "Madagascar Vanilla White Truffles",
+                category: "white",
+                price: 16.00,
+                originalPrice: 19.50,
+                rating: 4.7,
+                reviews: 82,
+                image: "https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=600&auto=format&fit=crop",
+                tag: "Silky Smooth",
+                description: "Pure cocoa butter white chocolate infused with real Madagascar vanilla bean seeds."
+            },
+            {
+                id: 5,
+                name: "Royal Assorted Truffle Box (16 pcs)",
+                category: "truffles",
+                price: 38.00,
+                originalPrice: 45.00,
+                rating: 4.9,
+                reviews: 312,
+                image: "https://images.unsplash.com/photo-1526081347589-7fa3cb41b4b2?w=600&auto=format&fit=crop",
+                tag: "Gift Choice",
+                description: "A decadent selection of dark ganache, salted caramel, pistachios, and praline truffles."
+            },
+            {
+                id: 6,
+                name: "Gold Foil French Pralines",
+                category: "truffles",
+                price: 22.50,
+                originalPrice: 26.00,
+                rating: 4.8,
+                reviews: 67,
+                image: "https://images.unsplash.com/photo-1565071559227-20ab25b7685e?w=600&auto=format&fit=crop",
+                tag: "Luxury",
+                description: "Handcrafted almond praline wrapped in delicate edible 24k gold leaf foil."
+            },
+            {
+                id: 7,
+                name: "Organic Vegan Dark Mint Bark",
+                category: "vegan",
+                price: 13.99,
+                originalPrice: 16.99,
+                rating: 4.6,
+                reviews: 45,
+                image: "https://images.unsplash.com/photo-1511381939415-e44015466834?w=600&auto=format&fit=crop",
+                tag: "100% Plant-Based",
+                description: "Dairy-free dark chocolate enriched with organic peppermint oil and cacao nibs."
+            },
+            {
+                id: 8,
+                name: "Sea Salt Fleur de Sel Caramel Truffles",
+                category: "milk",
+                price: 18.00,
+                originalPrice: 22.00,
+                rating: 4.9,
+                reviews: 189,
+                image: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop",
+                tag: "Top Rated",
+                description: "Flowing gooey salted butter caramel encased in smooth milk chocolate shell."
+            },
+            {
+                id: 9,
+                name: "Keto Sugar-Free Almond Crunch",
+                category: "vegan",
+                price: 15.00,
+                originalPrice: 18.00,
+                rating: 4.5,
+                reviews: 58,
+                image: "https://images.unsplash.com/photo-1548907040-4baa42d10919?w=600&auto=format&fit=crop",
+                tag: "Sugar Free",
+                description: "Zero added sugar dark chocolate sweetened with monk fruit and roasted almonds."
+            },
+            {
+                id: 10,
+                name: "Velvet Grand Gift Hamper Set",
+                category: "gifts",
+                price: 89.99,
+                originalPrice: 110.00,
+                rating: 5.0,
+                reviews: 410,
+                image: "https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=600&auto=format&fit=crop",
+                tag: "Ultimate Gift",
+                description: "Includes 24 truffles, 3 dark chocolate bars, hot cocoa blend, and gold spoon."
+            },
+            {
+                id: 11,
+                name: "White Pistachio Matcha Delight",
+                category: "white",
+                price: 17.50,
+                originalPrice: 20.00,
+                rating: 4.7,
+                reviews: 73,
+                image: "https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=600&auto=format&fit=crop",
+                tag: "Artisanal",
+                description: "Creamy white chocolate infused with ceremonial grade Japanese matcha powder."
+            },
+            {
+                id: 12,
+                name: "70% Dark Chili & Cinnamon Infusion",
+                category: "dark",
+                price: 13.50,
+                originalPrice: 16.00,
+                rating: 4.6,
+                reviews: 62,
+                image: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=600&auto=format&fit=crop",
+                tag: "Spicy & Bold",
+                description: "Warm Mexican cinnamon and subtle habanero spice balanced with bittersweet cocoa."
+            }
+        ];
+
+        /* TRUFFLES FOR CUSTOM BOX BUILDER */
+        const BUILDER_TRUFFLES = [
+            { name: "Espresso Ganache", icon: "☕", type: "Dark 70%" },
+            { name: "Salted Caramel", icon: "🍯", type: "Milk" },
+            { name: "Raspberry Cream", icon: "🍓", type: "Ruby" },
+            { name: "Pistachio Praline", icon: "🥜", type: "White" },
+            { name: "Champagne Velvet", icon: "🥂", type: "Dark 80%" },
+            { name: "Coconut Snowflake", icon: "🥥", type: "Vegan" }
+        ];
+
+        /* STATE MANAGEMENT */
+        let cart = [];
+        let appliedDiscount = null; // { code: 'CHOCO20', percent: 0.20, fixed: 0 }
+        let currentSlide = 0;
+        let activeCategory = 'all';
+        let customBoxSelection = [];
+        let fallingChocolatesActive = true;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            renderCustomBoxGrid();
+            initHeroSlider();
+            initFallingCanvas();
+            updateCartUI();
+        });
+
+        function renderProducts(itemsToRender = PRODUCTS) {
+            const grid = document.getElementById('product-grid');
+            const noMsg = document.getElementById('no-products-msg');
+            
+            grid.innerHTML = '';
+
+            if (itemsToRender.length === 0) {
+                noMsg.classList.remove('hidden');
+                return;
+            } else {
+                noMsg.classList.add('hidden');
+            }
+
+            itemsToRender.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = "glass-card rounded-2xl overflow-hidden border border-gold/20 hover:border-gold/60 transition duration-300 flex flex-col group relative";
+                
+                card.innerHTML = `
+                    <!-- Image Wrapper -->
+                    <div class="relative overflow-hidden aspect-[4/3]">
+                        <img src="${prod.image}" alt="${prod.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-choco-950 via-transparent to-transparent opacity-60"></div>
+                        <span class="absolute top-3 left-3 bg-choco-900/80 backdrop-blur-md text-gold text-[10px] font-bold px-2.5 py-1 rounded-full border border-gold/30">
+                            ${prod.tag}
+                        </span>
+                        <button onclick="openQuickView(${prod.id})" class="absolute bottom-3 right-3 bg-choco-900/80 hover:bg-gold hover:text-choco-900 text-gold p-2 rounded-full border border-gold/30 transition text-xs">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex items-center space-x-1 text-gold text-[11px] mb-1">
+                                <i class="fa-solid fa-star"></i>
+                                <span class="font-bold text-white">${prod.rating}</span>
+                                <span class="text-choco-400">(${prod.reviews})</span>
+                            </div>
+                            <h3 class="font-serif font-bold text-white text-base group-hover:text-gold transition line-clamp-1">${prod.name}</h3>
+                            <p class="text-choco-300 text-xs line-clamp-2 mt-1 leading-relaxed">${prod.description}</p>
+                        </div>
+
+                        <!-- Price & Action -->
+                        <div class="pt-3 border-t border-choco-800/80 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-choco-400 line-through mr-1 font-mono">$${prod.originalPrice.toFixed(2)}</span>
+                                <span class="text-lg font-bold text-gold font-serif">$${prod.price.toFixed(2)}</span>
+                            </div>
+                            <button onclick="quickAddToCart(${prod.id})" class="bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold px-3.5 py-2 rounded-xl text-xs hover:scale-105 transition shadow flex items-center space-x-1.5">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat) {
+            activeCategory = cat;
+            
+            // Toggle active state on buttons
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-gold', 'bg-gold', 'text-choco-900');
+                btn.classList.add('border-gold/30', 'bg-choco-800/80', 'text-choco-200');
+            });
+
+            event.currentTarget.classList.add('active', 'border-gold', 'bg-gold', 'text-choco-900');
+            event.currentTarget.classList.remove('border-gold/30', 'bg-choco-800/80', 'text-choco-200');
+
+            if (cat === 'all') {
+                renderProducts(PRODUCTS);
+            } else {
+                const filtered = PRODUCTS.filter(p => p.category === cat);
+                renderProducts(filtered);
+            }
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        function filterProductsMobile() {
+            const query = document.getElementById('search-input-mobile').value.toLowerCase();
+            const filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        function initHeroSlider() {
+            setInterval(() => {
+                nextSlide();
+            }, 6000);
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            const slidesContainer = document.getElementById('carousel-slides');
+            slidesContainer.style.transform = `translateX(-${index * 100}%)`;
+
+            // Update Indicators
+            document.querySelectorAll('.slide-dot').forEach((dot, idx) => {
+                if (idx === index) {
+                    dot.className = 'slide-dot w-8 h-2 rounded-full bg-gold transition-all duration-300';
+                } else {
+                    dot.className = 'slide-dot w-2 h-2 rounded-full bg-choco-500/60 transition-all duration-300';
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % 3;
+            goToSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + 3) % 3;
+            goToSlide(currentSlide);
+        }
+
+        function renderCustomBoxGrid() {
+            const container = document.getElementById('truffle-selection-grid');
+            container.innerHTML = '';
+
+            BUILDER_TRUFFLES.forEach(truffle => {
+                const item = document.createElement('button');
+                item.onclick = () => addTruffleToCustomBox(truffle);
+                item.className = "glass-card p-3 rounded-xl border border-gold/20 hover:border-gold text-left transition flex items-center space-x-3 group";
+                item.innerHTML = `
+                    <div class="text-2xl group-hover:scale-125 transition transform">${truffle.icon}</div>
+                    <div>
+                        <div class="text-xs font-bold text-white">${truffle.name}</div>
+                        <div class="text-[10px] text-gold">${truffle.type}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function addTruffleToCustomBox(truffle) {
+            if (customBoxSelection.length < 6) {
+                customBoxSelection.push(truffle);
+                updateCustomBoxUI();
+            } else {
+                showToast("Custom box is full! (6/6 slots occupied)");
+            }
+        }
+
+        function updateCustomBoxUI() {
+            const slotsContainer = document.getElementById('box-slots-container');
+            const countDisplay = document.getElementById('box-count-display');
+            const addBtn = document.getElementById('add-custom-box-btn');
+
+            countDisplay.innerText = `${customBoxSelection.length} / 6`;
+
+            // Update slot elements
+            const slots = slotsContainer.querySelectorAll('.slot-box');
+            slots.forEach((slot, idx) => {
+                if (idx < customBoxSelection.length) {
+                    const tr = customBoxSelection[idx];
+                    slot.className = "slot-box aspect-square rounded-lg border-2 border-gold bg-gold/20 flex flex-col items-center justify-center text-white text-xs font-bold transition shadow";
+                    slot.innerHTML = `<span>${tr.icon}</span>`;
+                } else {
+                    slot.className = "slot-box aspect-square rounded-lg border-2 border-dashed border-choco-500 flex items-center justify-center text-choco-600 bg-choco-900/50";
+                    slot.innerText = idx + 1;
+                }
+            });
+
+            if (customBoxSelection.length === 6) {
+                addBtn.disabled = false;
+                addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                addBtn.classList.add('hover:scale-105', 'shadow-gold/20');
+            } else {
+                addBtn.disabled = true;
+                addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function clearCustomBox() {
+            customBoxSelection = [];
+            updateCustomBoxUI();
+        }
+
+        function addCustomBoxToCart() {
+            if (customBoxSelection.length < 6) return;
+
+            const boxItem = {
+                id: 'custom-box-' + Date.now(),
+                name: "Custom 6-Piece Truffle Box",
+                price: 29.99,
+                image: "https://images.unsplash.com/photo-1526081347589-7fa3cb41b4b2?w=600&auto=format&fit=crop",
+                quantity: 1,
+                details: customBoxSelection.map(t => t.name).join(", ")
+            };
+
+            const existingIndex = cart.findIndex(c => c.id === boxItem.id);
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity++;
+            } else {
+                cart.push(boxItem);
+            }
+
+            showToast("Custom Truffle Box added to cart!");
+            clearCustomBox();
+            updateCartUI();
+            toggleCartDrawer();
+        }
+
+        function quickAddToCart(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const existing = cart.find(item => item.id === product.id);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: 1
+                });
+            }
+
+            showToast(`Added "${product.name}" to cart!`);
+            updateCartUI();
+        }
+
+        function updateCartQuantity(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(c => c.id !== id);
+                }
+            }
+            updateCartUI();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(c => c.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const badge = document.getElementById('cart-badge');
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const discountRow = document.getElementById('discount-row');
+            const discountNameEl = document.getElementById('discount-name');
+            const discountValEl = document.getElementById('cart-discount');
+            const shippingEl = document.getElementById('cart-shipping');
+            const totalEl = document.getElementById('cart-total');
+            const progressBar = document.getElementById('shipping-progress-bar');
+            const shippingText = document.getElementById('free-shipping-text');
+
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            badge.innerText = totalItems;
+
+            // Render Cart Items
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 text-choco-400 space-y-3">
+                        <i class="fa-solid fa-basket-shopping text-4xl text-choco-600"></i>
+                        <p class="text-sm">Your chocolate bag is empty.</p>
+                        <a href="#products" onclick="toggleCartDrawer()" class="inline-block text-xs bg-gold text-choco-900 font-bold px-4 py-2 rounded-full">Explore Chocolates</a>
+                    </div>
+                `;
+            } else {
+                cart.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = "flex items-center space-x-3 bg-choco-900/60 p-3 rounded-xl border border-gold/10";
+                    el.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" class="w-14 h-14 object-cover rounded-lg border border-gold/20">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                            ${item.details ? `<p class="text-[10px] text-gold truncate">${item.details}</p>` : ''}
+                            <span class="text-xs text-gold font-bold font-serif">$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-choco-950 border border-gold/20 rounded-lg p-1">
+                            <button onclick="updateCartQuantity('${item.id}', -1)" class="w-5 h-5 text-xs text-choco-300 hover:text-white flex items-center justify-center">-</button>
+                            <span class="text-xs font-bold text-white px-1">${item.quantity}</span>
+                            <button onclick="updateCartQuantity('${item.id}', 1)" class="w-5 h-5 text-xs text-choco-300 hover:text-white flex items-center justify-center">+</button>
+                        </div>
+                        <button onclick="removeFromCart('${item.id}')" class="text-choco-500 hover:text-ruby text-xs p-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    `;
+                    container.appendChild(el);
+                });
+            }
+
+            // Calculations
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Free Shipping threshold $75
+            let shipping = subtotal > 0 ? (subtotal >= 75 ? 0 : 5.99) : 0;
+            const progressPercent = Math.min(100, (subtotal / 75) * 100);
+            progressBar.style.width = `${progressPercent}%`;
+
+            if (subtotal >= 75) {
+                shippingText.innerHTML = `<span>Free Shipping Unlocked!</span> <span class="text-emerald-400 font-bold">🎉 FREE</span>`;
+            } else {
+                const diff = (75 - subtotal).toFixed(2);
+                shippingText.innerHTML = `<span>Free Insulated Shipping:</span> <span class="text-gold font-bold">Add $${diff} more</span>`;
+            }
+
+            // Discount Calculation
+            let discountAmount = 0;
+            if (appliedDiscount && subtotal > 0) {
+                if (appliedDiscount.percent) {
+                    discountAmount = subtotal * appliedDiscount.percent;
+                } else if (appliedDiscount.fixed) {
+                    discountAmount = appliedDiscount.fixed;
+                }
+
+                discountRow.classList.remove('hidden');
+                discountNameEl.innerText = appliedDiscount.code;
+                discountValEl.innerText = `-$${discountAmount.toFixed(2)}`;
+            } else {
+                discountRow.classList.add('hidden');
+            }
+
+            const grandTotal = Math.max(0, subtotal - discountAmount + shipping);
+
+            subtotalEl.innerText = `$${subtotal.toFixed(2)}`;
+            shippingEl.innerText = shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`;
+            totalEl.innerText = `$${grandTotal.toFixed(2)}`;
+            document.getElementById('checkout-final-amount').innerText = `$${grandTotal.toFixed(2)}`;
+        }
+
+        /* PROMO CODES */
+        function copyPromo(code) {
+            navigator.clipboard.writeText(code);
+            showToast(`Coupon code "${code}" copied to clipboard!`);
+            document.getElementById('cart-promo-input').value = code;
+        }
+
+        function applyPromoCode() {
+            const input = document.getElementById('cart-promo-input').value.trim().toUpperCase();
+            const msgEl = document.getElementById('promo-message');
+
+            msgEl.classList.remove('hidden', 'text-emerald-400', 'text-ruby');
+
+            if (input === 'CHOCO20') {
+                appliedDiscount = { code: 'CHOCO20', percent: 0.20 };
+                msgEl.innerText = 'Success: 20% discount applied!';
+                msgEl.classList.add('text-emerald-400');
+            } else if (input === 'SWEET10') {
+                appliedDiscount = { code: 'SWEET10', fixed: 10.00 };
+                msgEl.innerText = 'Success: $10 discount applied!';
+                msgEl.classList.add('text-emerald-400');
+            } else if (input === 'ROYAL30') {
+                appliedDiscount = { code: 'ROYAL30', percent: 0.30 };
+                msgEl.innerText = 'Success: 30% Royal discount applied!';
+                msgEl.classList.add('text-emerald-400');
+            } else {
+                appliedDiscount = null;
+                msgEl.innerText = 'Invalid promo code. Try CHOCO20';
+                msgEl.classList.add('text-ruby');
+            }
+
+            updateCartUI();
+        }
+
+        /* MODALS & DRAWER CONTROLS */
+        function toggleCartDrawer() {
+            const backdrop = document.getElementById('cart-drawer-backdrop');
+            const drawer = document.getElementById('cart-drawer');
+
+            if (drawer.classList.contains('translate-x-full')) {
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                drawer.classList.remove('translate-x-full');
+            } else {
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+                drawer.classList.add('translate-x-full');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function openQuickView(productId) {
+            const prod = PRODUCTS.find(p => p.id === productId);
+            if (!prod) return;
+
+            const modal = document.getElementById('quickview-modal');
+            const container = document.getElementById('quickview-content');
+
+            container.innerHTML = `
+                <div class="rounded-2xl overflow-hidden border border-gold/30 aspect-square">
+                    <img src="${prod.image}" alt="${prod.name}" class="w-full h-full object-cover">
+                </div>
+                <div class="space-y-4">
+                    <span class="bg-gold/20 text-gold text-xs font-bold px-3 py-1 rounded-full border border-gold/30">
+                        ${prod.tag}
+                    </span>
+                    <h3 class="text-2xl font-serif font-bold text-white">${prod.name}</h3>
+                    <p class="text-choco-200 text-xs leading-relaxed">${prod.description}</p>
+                    <div class="flex items-center space-x-2 text-gold text-sm">
+                        <i class="fa-solid fa-star"></i>
+                        <span class="font-bold text-white">${prod.rating}</span>
+                        <span class="text-choco-400 text-xs">(${prod.reviews} customer reviews)</span>
+                    </div>
+                    <div class="pt-2">
+                        <span class="text-2xl font-serif font-bold text-gold">$${prod.price.toFixed(2)}</span>
+                        <span class="text-sm text-choco-400 line-through ml-2">$${prod.originalPrice.toFixed(2)}</span>
+                    </div>
+                    <button onclick="quickAddToCart(${prod.id}); closeQuickView(); toggleCartDrawer();" class="w-full bg-gradient-to-r from-gold-dark via-gold to-gold-dark text-choco-900 font-bold py-3 rounded-xl text-xs hover:brightness-110 transition shadow-lg">
+                        Add to Bag Now
+                    </button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeQuickView() {
+            document.getElementById('quickview-modal').classList.add('hidden');
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) {
+                showToast("Your cart is empty!");
+                return;
+            }
+            toggleCartDrawer();
+            document.getElementById('checkout-modal').classList.remove('hidden');
+            document.getElementById('checkout-form-container').classList.remove('hidden');
+            document.getElementById('checkout-success-msg').classList.add('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function processCheckout(event) {
+            event.preventDefault();
+            document.getElementById('order-id-num').innerText = Math.floor(10000 + Math.random() * 90000);
+            document.getElementById('checkout-form-container').classList.add('hidden');
+            document.getElementById('checkout-success-msg').classList.remove('hidden');
+            
+            // Clear cart
+            cart = [];
+            appliedDiscount = null;
+            updateCartUI();
+        }
+
+        function handleNewsletter(e) {
+            e.preventDefault();
+            showToast("Thank you for subscribing! Check your email for your 10% coupon.");
+            e.target.reset();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-message');
+            msg.innerText = message;
+
+            toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function initFallingCanvas() {
+            const canvas = document.getElementById('falling-canvas');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Chocolate Particle Types (Emoji shapes or drawn beans)
+            const CHOCO_TYPES = ['🍫', '🍬', '🌰', '🤎', '✨'];
+            const particles = [];
+            const PARTICLE_COUNT = 35;
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    symbol: CHOCO_TYPES[Math.floor(Math.random() * CHOCO_TYPES.length)],
+                    size: Math.random() * 18 + 14,
+                    speedY: Math.random() * 1.5 + 0.8,
+                    speedX: Math.sin(Math.random() * Math.PI) * 0.5,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 1.5,
+                    opacity: Math.random() * 0.6 + 0.3
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (fallingChocolatesActive) {
+                    particles.forEach(p => {
+                        p.y += p.speedY;
+                        p.x += Math.sin(p.y * 0.01) * 0.5;
+                        p.rotation += p.rotationSpeed;
+
+                        if (p.y > canvas.height + 40) {
+                            p.y = -30;
+                            p.x = Math.random() * canvas.width;
+                        }
+
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate((p.rotation * Math.PI) / 180);
+                        ctx.globalAlpha = p.opacity;
+                        ctx.font = `${p.size}px serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(p.symbol, 0, 0);
+                        ctx.restore();
+                    });
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        function toggleFallingChocolates() {
+            fallingChocolatesActive = !fallingChocolatesActive;
+            const btnText = document.getElementById('falling-toggle-text');
+            if (btnText) {
+                btnText.innerText = `Falling Effect: ${fallingChocolatesActive ? 'ON' : 'OFF'}`;
+            }
+            showToast(`Falling Chocolate Animation ${fallingChocolatesActive ? 'Enabled' : 'Disabled'}`);
+        }
+    </script>
+</body>
+</html>
